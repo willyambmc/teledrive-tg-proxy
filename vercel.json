@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/[...path].js": {
+      "runtime": "edge"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/[...path]" }
+  ]
+}
