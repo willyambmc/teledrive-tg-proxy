@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tutorial Deploy TeleDrive ke Vercel — Panduan Lengkap</title>
+<style>
+  :root {
+    --primary: #0ea5e9;
+    --primary-dark: #0284c7;
+    --accent: #f59e0b;
+    --bg: #ffffff;
+    --bg-alt: #f8fafc;
+    --bg-code: #1e293b;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --text-on-dark: #e2e8f0;
+    --border: #e2e8f0;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0ea5e9 100%);
+    color: white;
+    padding: 60px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 70%, rgba(14,165,233,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(245,158,11,0.1) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,10px)} }
+  .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .hero p {
+    font-size: clamp(15px, 2.5vw, 18px);
+    opacity: 0.85;
+    max-width: 600px;
+    margin: 0 auto 30px;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+  .hero-stat {
+    text-align: center;
+  }
+  .hero-stat .num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .hero-stat .label {
+    font-size: 12px;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ===== CONTAINER ===== */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  /* ===== TOC ===== */
+  .toc {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 40px;
+  }
+  .toc h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toc ol {
+    padding-left: 20px;
+    column-count: 2;
+    column-gap: 20px;
+  }
+  .toc li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    break-inside: avoid;
+  }
+  .toc a {
+    color: var(--primary-dark);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .toc a:hover { color: var(--primary); text-decoration: underline; }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    margin-bottom: 50px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 800;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  /* ===== STEP CARDS ===== */
+  .step {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .step:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+  .step-badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .step h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .step p { margin-bottom: 10px; color: var(--text-light); }
+
+  /* ===== IMAGE BLOCK ===== */
+  .img-block {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 20px 0;
+    text-align: center;
+  }
+  .img-block img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .img-block .caption {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    position: relative;
+    margin: 16px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg-code);
+  }
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: rgba(0,0,0,0.3);
+    font-size: 12px;
+    color: var(--text-on-dark);
+  }
+  .code-header .lang {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .code-header .copy-hint {
+    opacity: 0.5;
+    font-size: 11px;
+  }
+  .code-block pre {
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #e2e8f0;
+  }
+  .code-block code {
+    font-family: inherit;
+  }
+  /* Syntax highlights */
+  .cm { color: #64748b; }
+  .kw { color: #c084fc; }
+  .str { color: #34d399; }
+  .cmd { color: #38bdf8; }
+  .var { color: #fbbf24; }
+  .flag { color: #fb923c; }
+
+  /* ===== INFO BOX ===== */
+  .info-box {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .info-box .icon { font-size: 20px; flex-shrink: 0; line-height: 1.4; }
+  .info-box.tip {
+    background: #f0fdf4;
+    border-left: 4px solid var(--success);
+    color: #166534;
+  }
+  .info-box.warning {
+    background: #fffbeb;
+    border-left: 4px solid var(--warning);
+    color: #92400e;
+  }
+  .info-box.danger {
+    background: #fef2f2;
+    border-left: 4px solid var(--danger);
+    color: #991b1b;
+  }
+  .info-box.info {
+    background: #f0f9ff;
+    border-left: 4px solid var(--primary);
+    color: #075985;
+  }
+  .info-box strong { display: block; margin-bottom: 4px; }
+
+  /* ===== CHECKLIST ===== */
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+  .checklist li {
+    padding: 8px 0 8px 30px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: '✅';
+    position: absolute;
+    left: 0;
+  }
+
+  /* ===== LINK BUTTON ===== */
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .link-btn.primary {
+    background: var(--primary);
+    color: white;
+  }
+  .link-btn.primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .link-btn.outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .link-btn.outline:hover { background: var(--primary); color: white; }
+
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+
+  /* ===== ARROW CONNECTOR ===== */
+  .arrow-down {
+    text-align: center;
+    font-size: 24px;
+    color: var(--primary);
+    margin: 10px 0;
+    opacity: 0.5;
+  }
+
+  /* ===== TABLE ===== */
+  .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .styled-table th {
+    background: var(--bg-alt);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 2px solid var(--border);
+  }
+  .styled-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .styled-table tr:last-child td { border-bottom: none; }
+  .styled-table tr:hover td { background: var(--bg-alt); }
+
+  /* ===== COMPARISON CARDS ===== */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .compare-card {
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .compare-card:hover { border-color: var(--primary); }
+  .compare-card.recommended {
+    border-color: var(--success);
+    background: #f0fdf4;
+  }
+  .compare-card .card-icon { font-size: 36px; margin-bottom: 10px; }
+  .compare-card h4 { font-size: 16px; margin-bottom: 6px; }
+  .compare-card p { font-size: 13px; color: var(--text-light); }
+  .compare-card .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+  .tag-free { background: #dcfce7; color: #166534; }
+  .tag-paid { background: #fef3c7; color: #92400e; }
+  .tag-recommended { background: var(--success); color: white; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    background: var(--bg-alt);
+    border-top: 1px solid var(--border);
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-light);
+  }
+
+  /* ===== PRINT ===== */
+  @media print {
+    .hero { padding: 30px 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .step { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+    .code-block { break-inside: avoid; }
+    .toc ol { column-count: 1; }
+    .link-btn { display: inline-block; }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    .hero { padding: 40px 16px; }
+    .hero h1 { font-size: 26px; }
+    .container { padding: 24px 16px; }
+    .toc ol { column-count: 1; }
+    .hero-stats { gap: 20px; }
+    .step { padding: 18px; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .btn-group { flex-direction: column; }
+    .btn-group .link-btn { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================== HERO ======================== -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">📘 PANDUAN LENGKAP</div>
+    <h1>Deploy TeleDrive<br>ke Vercel</h1>
+    <p>Tutorial step-by-step agar TeleDrive bisa diakses dari HP, laptop, tablet mana pun — kapan saja, gratis, dan permanen 24/7.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">5</div>
+        <div class="label">Menit</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">Rp 0</div>
+        <div class="label">Biaya</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">3</div>
+        <div class="label">Langkah</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <!-- ======================== DAFTAR ISI ======================== -->
+  <div class="toc" id="toc">
+    <h2>📑 Daftar Isi</h2>
+    <ol>
+      <li><a href="#pengantar">Pengantar — Kenapa Perlu Deploy?</a></li>
+      <li><a href="#persiapan">Persiapan — Yang Perlu Disiapkan</a></li>
+      <li><a href="#bot-telegram">Buat Bot Telegram (Kalau Belum Punya)</a></li>
+      <li><a href="#chat-id">Dapatkan Chat ID</a></li>
+      <li><a href="#download">Download File Deploy</a></li>
+      <li><a href="#github">Upload ke GitHub</a></li>
+      <li><a href="#vercel">Deploy ke Vercel</a></li>
+      <li><a href="#gunakan">Gunakan TeleDrive</a></li>
+      <li><a href="#custom-domain">Custom Domain (Opsional)</a></li>
+      <li><a href="#update">Cara Update</a></li>
+      <li><a href="#alternatif">Alternatif: Render / Railway</a></li>
+      <li><a href="#troubleshoot">Troubleshooting</a></li>
+      <li><a href="#arsitektur">Arsitektur & Keamanan</a></li>
+    </ol>
+  </div>
+
+  <!-- ======================== SECTION 1 ======================== -->
+  <div class="section" id="pengantar">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>Pengantar — Kenapa Perlu Deploy?</h2>
+    </div>
+
+    <div class="img-block">
+      <img src="tutorial-assets/multi-device.png" alt="Multi-device access">
+      <div class="caption">TeleDrive bisa diakses dari semua device setelah di-deploy</div>
+    </div>
+
+    <p>Preview/sandbox di mana TeleDrive ini dibuat hanya berjalan <strong>sementara</strong> di container development. Saat tidak ada yang memproses, server mati dan URL tidak bisa diakses.</p>
+    <p>Untuk membuatnya bisa diakses <strong>kapan saja, dari device mana pun</strong>, kita perlu <strong>deploy</strong> (publish) ke server hosting yang aktif 24/7.</p>
+
+    <div class="info-box info">
+      <div class="icon">💡</div>
+      <div>
+        <strong>Apa itu Deploy?</strong>
+        Deploy = meng-upload kode aplikasi ke server hosting agar bisa diakses publik melalui URL permanen. Seperti upload video ke YouTube — setelah upload, semua orang bisa akses kapan saja.
+      </div>
+    </div>
+
+    <h3 style="margin: 20px 0 12px; font-size: 16px;">Perbandingan Platform Hosting</h3>
+    <div class="compare-grid">
+      <div class="compare-card recommended">
+        <div class="card-icon">▲</div>
+        <h4>Vercel</h4>
+        <p>Auto-deploy dari GitHub, gratis, Edge Functions global</p>
+        <span class="tag tag-recommended">DIREKOMENDASIKAN</span>
+      </div>
+      <div class="compare-card">
+        <div class="card-icon">▲</div>
+        <h4>Render</h4>
+        <p>Server Node.js lengkap, tanpa batas ukuran file</p>
+        <span class="tag tag-free">GRATIS</span>
+      </div>
+      <div class="compare-card">
+        <div class="card-icon">▲</div>
+        <h4>Railway</h4>
+        <p>Mudah setup, performa bagus, $5 credit/bulan</p>
+        <span class="tag tag-free">TRIAL GRATIS</span>
+      </div>
+    </div>
+
+    <p style="margin-top: 16px;">Tutorial ini menggunakan <strong>Vercel</strong> karena paling mudah dan gratis. Panduan untuk Render/Railway ada di <a href="#alternatif">bagian alternatif</a>.</p>
+  </div>
+
+  <!-- ======================== SECTION 2 ======================== -->
+  <div class="section" id="persiapan">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>Persiapan — Yang Perlu Disiapkan</h2>
+    </div>
+
+    <p>Pastikan kamu sudah punya semua ini sebelum mulai:</p>
+
+    <ul class="checklist">
+      <li><strong>Akun GitHub</strong> — Daftar gratis di <a href="https://github.com/signup" target="_blank">github.com/signup</a></li>
+      <li><strong>Akun Vercel</strong> — Daftar di <a href="https://vercel.com/signup" target="_blank">vercel.com/signup</a> (bisa login pakai akun GitHub)</li>
+      <li><strong>Git terinstall</strong> di komputer — Download di <a href="https://git-scm.com/downloads" target="_blank">git-scm.com/downloads</a></li>
+      <li><strong>Bot Telegram + Chat ID</strong> — Lihat cara buat di bagian 3 & 4</li>
+    </ul>
+
+    <div class="info-box tip">
+      <div class="icon">✨</div>
+      <div>
+        <strong>Sudah punya semua?</strong>
+        Kalau kamu sudah punya bot token dan chat ID (karena sudah pakai TeleDrive sebelumnya), langsung loncat ke <a href="#download">Langkah 5: Download File</a>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 3 ======================== -->
+  <div class="section" id="bot-telegram">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>Buat Bot Telegram (Kalau Belum Punya)</h2>
+    </div>
+
+    <div class="img-block">
+      <img src="tutorial-assets/bot-setup.png" alt="Bot setup" style="max-width: 300px;">
+      <div class="caption">Bot Telegram sebagai "penyimpanan" file kamu</div>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 3.1</div>
+      <h3>Buka BotFather di Telegram</h3>
+      <p>Buka Telegram, cari <strong>@BotFather</strong> (punya centang biru ✅). Ketik <code>/newbot</code>.</p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 3.2</div>
+      <h3>Beri Nama Bot</h3>
+      <p>Beri nama bot yang kamu suka, misalnya: <strong>"Drive Pribadi Saya"</strong></p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 3.3</div>
+      <h3>Beri Username Bot</h3>
+      <p>Username harus unik dan diakhiri "bot". Contoh: <strong>my_drive_12345_bot</strong></p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 3.4</div>
+      <h3>Simpan Bot Token</h3>
+      <p>BotFather akan kasih token seperti ini:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang">Contoh Token</span><span class="copy-hint">⚠️ JANGAN DIBAGIKAN</span></div>
+        <pre><code>7123456789:AAHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code></pre>
+      </div>
+      <p><strong>Simpan token ini!</strong> Kamu akan butuh saat setup TeleDrive.</p>
+    </div>
+
+    <div class="info-box warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <strong>Keamanan Token</strong>
+        Bot token adalah "kunci" akses ke bot kamu. Jangan pernah membagikannya ke orang lain. Kalau token bocor, kirim <code>/revoke</code> ke @BotFather untuk membuat token baru.
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 4 ======================== -->
+  <div class="section" id="chat-id">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>Dapatkan Chat ID</h2>
+    </div>
+
+    <p>Chat ID adalah ID unik channel/chat kamu di Telegram. Semua file akan disimpan di chat ini.</p>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 4.1</div>
+      <h3>Buat Channel atau Group di Telegram</h3>
+      <p>
+        <strong>Opsi A:</strong> Buat Channel baru (ikon broadcast) — rekomendasi karena bisa upload banyak file tanpa batas anggota.<br>
+        <strong>Opsi B:</strong> Gunakan Group — bisa kalau mau share akses dengan orang lain.<br>
+        <strong>Opsi C:</strong> Gunakan chat pribadi dengan bot — kurang ideal karena tidak bisa pinned messages.
+      </p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 4.2</div>
+      <h3>Tambahkan Bot ke Channel</h3>
+      <p>Buka channel → klik nama channel → <strong>Administrators</strong> → <strong>Add Admin</strong> → cari username bot kamu → jadikan admin.</p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 4.3</div>
+      <h3>Dapatkan Chat ID</h3>
+      <p>Cara paling mudah:</p>
+      <ol style="padding-left: 20px; margin: 10px 0; color: var(--text-light);">
+        <li>Kirim pesan apapun di channel tersebut</li>
+        <li>Buka browser, kunjungi: <code>https://api.telegram.org/bot<span style="color:var(--danger)">TOKEN_KAMU</span>/getUpdates</code></li>
+        <li>Cari bagian <code>"chat":{"id": -100xxxxxxxxxx}</code></li>
+        <li>Angka negatif itu adalah <strong>Chat ID</strong> kamu</li>
+      </ol>
+      <p>Contoh URL:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang">Browser</span></div>
+        <pre><code>https://api.telegram.org/bot7123456789:AAHxxx/getUpdates</code></pre>
+      </div>
+      <p>Contoh response:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang">JSON Response</span></div>
+        <pre><code>{
+  "ok": true,
+  "result": [{
+    "message": {
+      "chat": {
+        <span class="var">"id": -1001234567890</span>,
+        "title": "Drive Saya",
+        "type": "channel"
+      }
+    }
+  }]
+}</code></pre>
+      </div>
+      <p><strong>Chat ID kamu: <code>-1001234567890</code></strong> (angka negatif)</p>
+    </div>
+
+    <div class="info-box tip">
+      <div class="icon">💡</div>
+      <div>
+        <strong>Chat ID selalu dimulai dengan -100</strong> untuk channel. Kalau group, dimulai dengan -. Kalau chat pribadi, angka positif. Simpan Chat ID ini — kamu akan butuh saat setup TeleDrive.
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 5 ======================== -->
+  <div class="section" id="download">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <h2>Download File Deploy</h2>
+    </div>
+
+    <p>File yang perlu di-deploy sudah disiapkan di folder <code>deploy-vercel/</code>. Ada 2 cara mendapatkannya:</p>
+
+    <h3 style="font-size: 16px; margin: 16px 0 10px;">Cara A: Download ZIP (Paling Mudah)</h3>
+    <p>Download file <strong>deploy-vercel.zip</strong> (90KB) yang sudah tersedia. Extract di komputer kamu.</p>
+
+    <h3 style="font-size: 16px; margin: 20px 0 10px;">Cara B: Copy Manual</h3>
+    <p>Struktur folder yang harus kamu punya:</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="lang">Struktur Folder</span></div>
+      <pre><code>deploy-vercel/
+├── vercel.json              <span class="cm"># Konfigurasi Vercel</span>
+├── package.json             <span class="cm"># Info project</span>
+├── .gitignore               <span class="cm"># Git ignore rules</span>
+├── api/
+│   ├── tg-api.js            <span class="cm"># Proxy JSON → Telegram</span>
+│   └── tg-upload.js         <span class="cm"># Proxy upload file → Telegram</span>
+└── public/
+    ├── teledrive.html       <span class="cm"># Aplikasi utama (~436KB)</span>
+    ├── logo.svg             <span class="cm"># Logo</span>
+    └── robots.txt           <span class="cm"># SEO</span></code></pre>
+    </div>
+
+    <div class="img-block">
+      <img src="tutorial-assets/architecture.png" alt="Arsitektur">
+      <div class="caption">Arsitektur: Browser → Vercel (Proxy) → Telegram API</div>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 6 ======================== -->
+  <div class="section" id="github">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <h2>Upload ke GitHub</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 6.1</div>
+      <h3>Buat Repository Baru di GitHub</h3>
+      <p>
+        1. Buka <a href="https://github.com/new" target="_blank">github.com/new</a><br>
+        2. Repository name: <strong>teledrive</strong> (atau nama lain yang kamu suka)<br>
+        3. <strong>Jangan centang</strong> "Add a README file"<br>
+        4. Klik <strong>"Create repository"</strong>
+      </p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 6.2</div>
+      <h3>Buka Terminal / Command Prompt</h3>
+      <p>Navigasi ke folder <code>deploy-vercel</code> yang sudah di-extract:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang">Terminal</span></div>
+        <pre><code><span class="cmd">cd</span> <span class="var">/path/ke/deploy-vercel</span></code></pre>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 6.3</div>
+      <h3>Init Git dan Push</h3>
+      <p>Jalankan perintah-perintah ini satu per satu:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang">Terminal</span><span class="copy-hint">Salin dan jalankan satu per satu</span></div>
+        <pre><code><span class="cm"># Inisialisasi git repository</span>
+<span class="cmd">git</span> init
+
+<span class="cm"># Tambahkan semua file</span>
+<span class="cmd">git</span> <span class="flag">add</span> -A
+
+<span class="cm"># Commit dengan pesan</span>
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"TeleDrive siap deploy"</span>
+
+<span class="cm"># Hubungkan ke GitHub (ganti USERNAME_KAMU)</span>
+<span class="cmd">git</span> remote add origin https://github.com/<span class="var">USERNAME_KAMU</span>/teledrive.git
+
+<span class="cm"># Set branch utama ke 'main'</span>
+<span class="cmd">git</span> branch <span class="flag">-M</span> main
+
+<span class="cm"># Push ke GitHub</span>
+<span class="cmd">git</span> push <span class="flag">-u</span> origin main</code></pre>
+      </div>
+
+      <div class="info-box warning">
+        <div class="icon">⚠️</div>
+        <div>
+          <strong>Ganti USERNAME_KAMU</strong> dengan username GitHub kamu yang sebenarnya. Contoh: kalau URL GitHub kamu <code>github.com/budi123</code>, maka ganti jadi <code>budi123</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 6.4</div>
+      <h3>Verifikasi di GitHub</h3>
+      <p>Buka repository kamu di browser. Semua file sudah terupload ✅</p>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 7 ======================== -->
+  <div class="section" id="vercel">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <h2>Deploy ke Vercel</h2>
+    </div>
+
+    <div class="img-block">
+      <img src="tutorial-assets/deploy-flow.png" alt="Deploy flow">
+      <div class="caption">GitHub → Vercel: otomatis build dan deploy</div>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 7.1</div>
+      <h3>Login ke Vercel</h3>
+      <p>Buka <a href="https://vercel.com/login" target="_blank">vercel.com/login</a> dan login pakai akun GitHub.</p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 7.2</div>
+      <h3>Buat Project Baru</h3>
+      <p>
+        1. Di dashboard, klik <strong>"Add New..."</strong> → <strong>"Project"</strong><br>
+        2. Di bagian "Import Git Repository", cari dan pilih repository <strong>teledrive</strong> yang tadi dibuat<br>
+        3. Klik <strong>"Import"</strong>
+      </p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 7.3</div>
+      <h3>Konfigurasi Project</h3>
+      <p>Isi konfigurasi berikut:</p>
+
+      <table class="styled-table">
+        <tr>
+          <th>Setting</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td><strong>Project Name</strong></td>
+          <td><code>teledrive</code> (atau terserah)</td>
+        </tr>
+        <tr>
+          <td><strong>Framework Preset</strong></td>
+          <td><strong>Other</strong> (penting!)</td>
+        </tr>
+        <tr>
+          <td><strong>Root Directory</strong></td>
+          <td>Biarkan default (<code>.</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Build Command</strong></td>
+          <td>Kosongkan / hapus</td>
+        </tr>
+        <tr>
+          <td><strong>Output Directory</strong></td>
+          <td>Kosongkan / hapus</td>
+        </tr>
+        <tr>
+          <td><strong>Install Command</strong></td>
+          <td>Kosongkan / hapus</td>
+        </tr>
+      </table>
+
+      <div class="info-box danger">
+        <div class="icon">🔴</div>
+        <div>
+          <strong>PENTING: Framework Preset harus "Other"!</strong>
+          Jangan pilih Next.js, React, atau apapun. Karena ini bukan project Next.js, melainkan static files + Edge Functions.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 7.4</div>
+      <h3>Klik Deploy!</h3>
+      <p>Klik tombol biru <strong>"Deploy"</strong> dan tunggu ±30 detik.</p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step" style="border-color: var(--success); background: #f0fdf4;">
+      <div class="step-badge" style="background: var(--success);">🎉 SELESAI!</div>
+      <h3>Deploy Berhasil!</h3>
+      <p>Vercel akan memberikan URL seperti:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang">URL TeleDrive Kamu</span></div>
+        <pre><code>https://teledrive-<span class="var">abc123</span>.vercel.app</code></pre>
+      </div>
+      <div class="img-block" style="margin-top: 16px;">
+        <img src="tutorial-assets/deploy-success.png" alt="Deploy success" style="max-width: 250px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 8 ======================== -->
+  <div class="section" id="gunakan">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <h2>Gunakan TeleDrive</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 8.1</div>
+      <h3>Buka URL TeleDrive</h3>
+      <p>Buka URL Vercel kamu di browser (HP, laptop, tablet — apa saja). Contoh: <code>https://teledrive-abc123.vercel.app</code></p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 8.2</div>
+      <h3>Isi Settings</h3>
+      <p>
+        1. Klik ikon ⚙️ <strong>Pengaturan</strong> (di sidebar bawah atau tombol settings)<br>
+        2. Masukkan <strong>Bot Token</strong> dari @BotFather<br>
+        3. Masukkan <strong>Chat ID</strong> (angka negatif -100xxx)<br>
+        4. Klik <strong>Simpan</strong>
+      </p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 8.3</div>
+      <h3>Mulai Pakai!</h3>
+      <p>TeleDrive siap digunakan. Upload file, buat folder, kelola file — semua tersimpan di channel Telegram kamu dan bisa diakses dari device mana pun!</p>
+    </div>
+
+    <div class="btn-group">
+      <a href="https://vercel.com/new" target="_blank" class="link-btn primary">🚀 Deploy Sekarang ke Vercel</a>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 9 ======================== -->
+  <div class="section" id="custom-domain">
+    <div class="section-header">
+      <div class="section-number">9</div>
+      <h2>Custom Domain (Opsional)</h2>
+    </div>
+
+    <p>Kalau kamu punya domain sendiri, bisa dihubungkan ke Vercel:</p>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 9.1</div>
+      <h3>Tambah Domain di Vercel</h3>
+      <p>Dashboard Vercel → Project → <strong>Settings</strong> → <strong>Domains</strong> → Tambahkan domain kamu (misal: <code>drive.contoh.com</code>)</p>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 9.2</div>
+      <h3>Setting DNS</h3>
+      <p>Di DNS registrar (Cloudflare, Namecheap, dll), tambahkan:</p>
+      <table class="styled-table">
+        <tr><th>Type</th><th>Name</th><th>Value</th></tr>
+        <tr><td><code>CNAME</code></td><td><code>drive</code></td><td><code>cname.vercel-dns.com</code></td></tr>
+      </table>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="step">
+      <div class="step-badge">LANGKAH 9.3</div>
+      <h3>Tunggu Propagasi</h3>
+      <p>DNS perlu waktu ±5-30 menit untuk propagasi. Setelah itu, buka <code>drive.contoh.com</code> dan TeleDrive akan tampil!</p>
+    </div>
+
+    <div class="info-box info">
+      <div class="icon">💡</div>
+      <div>
+        <strong>HTTPS otomatis!</strong> Vercel otomatis mengurus SSL certificate. Domain kamu akan langsung pakai HTTPS tanpa konfigurasi tambahan.
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 10 ======================== -->
+  <div class="section" id="update">
+    <div class="section-header">
+      <div class="section-number">10</div>
+      <h2>Cara Update TeleDrive</h2>
+    </div>
+
+    <p>Kalau ada versi baru TeleDrive (file <code>teledrive.html</code> yang diperbarui):</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="lang">Terminal</span><span class="copy-hint">Di folder deploy-vercel</span></div>
+      <pre><code><span class="cm"># 1. Timpa file lama dengan yang baru</span>
+<span class="cmd">cp</span> <span class="var">/path/teledrive-baru.html</span> public/teledrive.html
+
+<span class="cm"># 2. Commit dan push</span>
+<span class="cmd">git</span> <span class="flag">add</span> public/teledrive.html
+<span class="cmd">git</span> commit <span class="flag">-m</span> <span class="str">"Update TeleDrive ke versi terbaru"</span>
+<span class="cmd">git</span> push</code></pre>
+    </div>
+
+    <div class="info-box tip">
+      <div class="icon">🔄</div>
+      <div>
+        <strong>Auto-Deploy!</strong> Setiap kali kamu push ke GitHub, Vercel akan otomatis mendeteksi perubahan dan me-redeploy. Tidak perlu login ke Vercel sama sekali. Butuh ±30 detik.
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 11 ======================== -->
+  <div class="section" id="alternatif">
+    <div class="section-header">
+      <div class="section-number">11</div>
+      <h2>Alternatif: Deploy ke Render / Railway</h2>
+    </div>
+
+    <p>Kalau kamu butuh upload file sangat besar (>50MB) atau tidak mau pakai Vercel, ada folder <code>deploy/teledrive-server/</code> yang berisi server Node.js mandiri:</p>
+
+    <h3 style="font-size: 16px; margin: 20px 0 10px;">Deploy ke Render.com</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">Langkah</span></div>
+      <pre><code><span class="cm"># 1. Push deploy/teledrive-server/ ke GitHub</span>
+<span class="cm"># 2. Buka render.com → New → Web Service</span>
+<span class="cm"># 3. Pilih repository teledrive-server</span>
+<span class="cm"># 4. Build Command: (kosongkan)</span>
+<span class="cm"># 5. Start Command: node server.js</span>
+<span class="cm"># 6. Klik Deploy — selesai!</span></code></pre>
+    </div>
+
+    <h3 style="font-size: 16px; margin: 20px 0 10px;">Deploy ke Railway.app</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="lang">Langkah</span></div>
+      <pre><code><span class="cm"># 1. Push deploy/teledrive-server/ ke GitHub</span>
+<span class="cm"># 2. Buka railway.app → New Project → Deploy from GitHub</span>
+<span class="cm"># 3. Pilih repository teledrive-server</span>
+<span class="cm"># 4. Railway otomatis detect Node.js dan deploy</span></code></pre>
+    </div>
+
+    <table class="styled-table">
+      <tr>
+        <th>Platform</th>
+        <th>Gratis?</th>
+        <th>Batas File Upload</th>
+        <th>Cold Start</th>
+      </tr>
+      <tr>
+        <td><strong>Vercel</strong> ✅</td>
+        <td>Ya (Hobby)</td>
+        <td>~50MB (Edge Runtime)</td>
+        <td>Tidak ada</td>
+      </tr>
+      <tr>
+        <td><strong>Render</strong></td>
+        <td>Ya (Free tier)</td>
+        <td>Tidak ada batas</td>
+        <td>~30 detik (setelah 15 menit idle)</td>
+      </tr>
+      <tr>
+        <td><strong>Railway</strong></td>
+        <td>$5 credit/bulan</td>
+        <td>Tidak ada batas</td>
+        <td>Tidak ada</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ======================== SECTION 12 ======================== -->
+  <div class="section" id="troubleshoot">
+    <div class="section-header">
+      <div class="section-number">12</div>
+      <h2>Troubleshooting</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">MASALAH 1</div>
+      <h3>Halaman 404 atau "Not Found" setelah deploy</h3>
+      <p>
+        <strong>Cause:</strong> Framework Preset tidak dipilih "Other"<br>
+        <strong>Fix:</strong> Di Vercel → Project Settings → General → Framework Preset → ubah ke <strong>Other</strong> → Redeploy
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">MASALAH 2</div>
+      <h3>Upload file gagal / error</h3>
+      <p>
+        <strong>Cause:</strong> File terlalu besar untuk Edge Runtime<br>
+        <strong>Fix:</strong> Gunakan folder <code>deploy/teledrive-server/</code> di Render/Railway (tidak ada batas ukuran)
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">MASALAH 3</div>
+      <h3>"Bad Request: bot token is invalid"</h3>
+      <p>
+        <strong>Cause:</strong> Bot token salah atau sudah direvoke<br>
+        <strong>Fix:</strong> Cek token di @BotFather → /mybots → API Token
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">MASALAH 4</div>
+      <h3>"Bad Request: chat not found"</h3>
+      <p>
+        <strong>Cause:</strong> Chat ID salah atau bot belum ditambahkan ke channel<br>
+        <strong>Fix:</strong> Pastikan bot sudah dijadikan admin di channel. Cek Chat ID dengan cara di bagian 4.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">MASALAH 5</div>
+      <h3>Git push gagal: "fatal: remote origin already exists"</h3>
+      <p>
+        <strong>Fix:</strong> Jalankan <code>git remote remove origin</code> lalu ulangi <code>git remote add origin ...</code>
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-badge">MASALAH 6</div>
+      <h3>Vercel deploy gagal: "Error: No output directory"</h3>
+      <p>
+        <strong>Fix:</strong> Pastikan Build Command dan Output Directory <strong>dikosongkan</strong> di settings project Vercel
+      </p>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 13 ======================== -->
+  <div class="section" id="arsitektur">
+    <div class="section-header">
+      <div class="section-number">13</div>
+      <h2>Arsitektur & Keamanan</h2>
+    </div>
+
+    <h3 style="font-size: 16px; margin-bottom: 12px">Bagaimana Cara Kerjanya?</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="lang">Alur Data</span></div>
+      <pre><code><span class="var">Browser (HP/Laptop)</span>
+    │
+    ├─ GET /teledrive.html  ──→  <span class="cmd">Vercel CDN</span> (static file)
+    │
+    ├─ POST /api/tg-api     ──→  <span class="cmd">Vercel Edge Function</span>
+    │                              └─→ forward JSON ke Telegram API
+    │                                 └─→ return response ke browser
+    │
+    └─ POST /api/tg-upload  ──→  <span class="cmd">Vercel Edge Function</span>
+                                   └─→ parse bot_token, chat_id
+                                   └─→ forward raw body ke Telegram
+                                      └─→ return response ke browser</code></pre>
+    </div>
+
+    <h3 style="font-size: 16px; margin: 20px 0 12px">Keamanan</h3>
+    <ul class="checklist">
+      <li><strong>Bot Token</strong> disimpan di <code>localStorage</code> browser kamu — TIDAK di server</li>
+      <li><strong>Chat ID</strong> juga disimpan lokal di browser</li>
+      <li>Semua data file tetap di <strong>Telegram Cloud</strong> — server hanya sebagai proxy</li>
+      <li>Edge Functions tidak menyimpan log sensitif</li>
+      <li>HTTPS otomatis dari Vercel</li>
+      <li>Headers keamanan: X-Content-Type-Options, X-Frame-Options, Referrer-Policy</li>
+    </ul>
+
+    <div class="info-box info">
+      <div class="icon">🔒</div>
+      <div>
+        <strong>Privasi Maksimal</strong>
+        Server proxy hanya meneruskan request tanpa menyimpan apapun. Bot token dan data kamu tetap di perangkat dan Telegram sendiri.
+      </div>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<!-- ======================== FOOTER ======================== -->
+<footer class="footer">
+  <p>
+    <strong>TeleDrive</strong> — Telegram Cloud & Folder Manager<br>
+    Tutorial Deploy v1.0 — Dibuat Juli 2025
+  </p>
+  <p style="margin-top: 8px; font-size: 12px; opacity: 0.6;">
+    Tips: Tekan <strong>Ctrl+P</strong> (Windows) atau <strong>Cmd+P</strong> (Mac) untuk cetak/save tutorial ini sebagai PDF.
+  </p>
+</footer>
+
+</body>
+</html>

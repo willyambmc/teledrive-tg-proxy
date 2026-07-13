@@ -1,0 +1,7 @@
+{
+  "name": "teledrive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TeleDrive - Telegram Cloud & Folder Manager (Deploy ke Vercel)",
+  "license": "MIT"
+}
